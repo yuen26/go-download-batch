@@ -111,7 +111,7 @@ func readLines(filePath string) ([]string, error) {
 // ----------------------------------------------------
 
 func downloadBatch(urls []string, outputDir string) {
-	const maxBatchSize int = 5
+	const maxBatchSize int = 4
 	skip := 0
 	urlCount := len(urls)
 	batchCount := int(math.Ceil(float64(urlCount / maxBatchSize)))

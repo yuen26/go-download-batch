@@ -15,12 +15,16 @@ import (
 	"sync"
 )
 
+const MAX_BATCH_SIZE int = 4
+
 func main() {
 	// Read url, file, output flag
 	var url, file, outputDir string
+	var batchSize int
 	flag.StringVar(&url, "url", "", "URL")
 	flag.StringVar(&file, "file", "", "File path")
 	flag.StringVar(&outputDir, "outputDir", "", "Output directory path")
+	flag.IntVar(&batchSize, "batchSize", MAX_BATCH_SIZE, "Batch size")
 	flag.Parse()
 	if url == "" && file == "" {
 		log.Fatal("url flag or file flag not present")
@@ -38,7 +42,7 @@ func main() {
 	}
 
 	// Download batch
-	downloadBatch(urls, outputDir)
+	downloadBatch(urls, outputDir, batchSize)
 
 	fmt.Print("Press any key to exit...")
 	fmt.Scanln()
@@ -110,22 +114,21 @@ func readLines(filePath string) ([]string, error) {
 // Download
 // ----------------------------------------------------
 
-func downloadBatch(urls []string, outputDir string) {
-	const maxBatchSize int = 4
+func downloadBatch(urls []string, outputDir string, batchSize int) {
 	skip := 0
 	urlCount := len(urls)
-	batchCount := int(math.Ceil(float64(urlCount / maxBatchSize)))
+	batchCount := int(math.Ceil(float64(urlCount / batchSize)))
 	fmt.Printf("URLs = %d, batches = %d\n", urlCount, batchCount)
 
 	for i := 0; i <= batchCount; i++ {
 		// Extract URLs
 		lowerBound := skip
-		upperBound := skip + maxBatchSize
+		upperBound := skip + batchSize
 		if upperBound > urlCount {
 			upperBound = urlCount
 		}
 		batchUrls := urls[lowerBound:upperBound]
-		skip += maxBatchSize
+		skip += batchSize
 
 		// Channels
 		processingErrorChan := make(chan error)

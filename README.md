@@ -40,4 +40,10 @@ Flags description:
 
 ### Batch size
 
-Default batch size is **4** - download 4 files simultaneously. You can customize this number by changing the value of `maxBatchSize` constant of `downloadBatch()` function.
+Default batch size is **4** - download 4 files simultaneously. You can pass batch size value via flag `batchSize`.
+
+For example:
+
+```bash
+go run main.go -url="https://www.example.com/images/{%03d}.png" -from=1 -to=5 -outputDir="/tmp/download" -batchSize=10
+```

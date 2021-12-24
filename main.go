@@ -15,16 +15,18 @@ import (
 	"sync"
 )
 
-const MAX_BATCH_SIZE int = 4
+const MAX_BATCH_SIZE int = 10
 
 func main() {
 	// Read url, file, output flag
 	var url, file, outputDir string
-	var batchSize int
+	var batchSize, from, to int
 	flag.StringVar(&url, "url", "", "URL")
 	flag.StringVar(&file, "file", "", "File path")
 	flag.StringVar(&outputDir, "outputDir", "", "Output directory path")
 	flag.IntVar(&batchSize, "batchSize", MAX_BATCH_SIZE, "Batch size")
+	flag.IntVar(&from, "from", -1, "From index")
+	flag.IntVar(&to, "to", -1, "To index")
 	flag.Parse()
 	if url == "" && file == "" {
 		log.Fatal("url flag or file flag not present")
@@ -36,34 +38,27 @@ func main() {
 	// Build URLs from each case
 	var urls []string
 	if url != "" {
-		urls = buildUrlsFromUrlTemplate(url)
+		// Download option 1
+		urls = buildUrlsFromUrlTemplate(url, from, to)
+		if from < 0 {
+			log.Fatal("Invalid from flag")
+		}
+		if to < 0 {
+			log.Fatal("Invalid to flag")
+		}
 	} else {
+		// Download option 2
 		urls = buildUrlsFromFile(file)
 	}
 
-	// Download batch
+	// Executing downloading
 	downloadBatch(urls, outputDir, batchSize)
-
-	fmt.Print("Press any key to exit...")
-	fmt.Scanln()
 }
 
 // Build URLs from URL template
 // ----------------------------------------------------
 
-func buildUrlsFromUrlTemplate(urlTemplate string) []string {
-	// Read from and to flag
-	var from, to int
-	flag.IntVar(&from, "from", -1, "From index")
-	flag.IntVar(&to, "to", -1, "To index")
-	flag.Parse()
-	if from < 0 {
-		log.Fatal("Invalid from flag")
-	}
-	if to < 0 {
-		log.Fatal("Invalid to flag")
-	}
-
+func buildUrlsFromUrlTemplate(urlTemplate string, from int, to int) []string {
 	// Parse URL template
 	const beginChar = "{"
 	const endChar = "}"
@@ -72,9 +67,9 @@ func buildUrlsFromUrlTemplate(urlTemplate string) []string {
 	if beginCharIndex == -1 || endCharIndex == -1 {
 		log.Fatal("Invalid url flag")
 	}
-	left := (urlTemplate)[:beginCharIndex-1]
+	left := (urlTemplate)[:beginCharIndex]
 	right := (urlTemplate)[endCharIndex+1:]
-	pattern := (urlTemplate)[beginCharIndex+1 : endCharIndex-1]
+	pattern := (urlTemplate)[beginCharIndex+1 : endCharIndex]
 
 	// Build urls
 	var urls []string
